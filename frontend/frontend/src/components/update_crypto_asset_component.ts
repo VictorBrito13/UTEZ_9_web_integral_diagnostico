@@ -3,7 +3,10 @@ import type {
   CryptoAssetSchema,
   ResponseSchema,
 } from "../schemas/crypto_asset_schema";
-import { createCryptoAssetCard } from "./ui/crypto_asset_card";
+import {
+  createCryptoAssetCard,
+  renderSingleAsset,
+} from "./ui/crypto_asset_card";
 
 export function createUpdateCryptoAssetComponent(): HTMLElement {
   const card = createCryptoAssetCard("PUT", "Update Asset");
@@ -70,7 +73,8 @@ export function createUpdateCryptoAssetComponent(): HTMLElement {
         CryptoAssetSchema
       >("PUT", `/crypto_asset/${cryptoAssetId}`, payload);
       const elapsed = ((performance.now() - start) / 1000).toFixed(2) + "s";
-      card.responsePanel.showResponse(response, 200, elapsed);
+      const content = renderSingleAsset(response.data, response.message);
+      card.responsePanel.showContent(content, 200, elapsed);
     } catch (error) {
       const msg = String(error);
       const m = msg.match(/\((\d+)\)/);

@@ -3,7 +3,7 @@ import type {
   CryptoAssetSchema,
   ResponseSchema,
 } from "../schemas/crypto_asset_schema";
-import { createCryptoAssetCard } from "./ui/crypto_asset_card";
+import { createCryptoAssetCard, renderAssetList } from "./ui/crypto_asset_card";
 
 export function createGetCryptoAssetsComponent(): HTMLElement {
   const card = createCryptoAssetCard("GET", "Fetch Assets");
@@ -15,11 +15,11 @@ export function createGetCryptoAssetsComponent(): HTMLElement {
     const start = performance.now();
     try {
       const response = await makeHttpRequest<
-        ResponseSchema<CryptoAssetSchema[]>,
-        undefined
+        ResponseSchema<CryptoAssetSchema[]>
       >("GET", "/crypto_asset");
       const elapsed = ((performance.now() - start) / 1000).toFixed(2) + "s";
-      card.responsePanel.showResponse(response, 200, elapsed);
+      const content = renderAssetList(response.data, response.message);
+      card.responsePanel.showContent(content, 200, elapsed);
     } catch (error) {
       const msg = String(error);
       const m = msg.match(/\((\d+)\)/);

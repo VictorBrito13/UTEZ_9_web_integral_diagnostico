@@ -1,3 +1,5 @@
+import type { CryptoAssetSchema } from "../../schemas/crypto_asset_schema";
+
 const VERB_CLASS: Record<string, string> = {
   GET: "verb-get",
   POST: "verb-post",
@@ -131,16 +133,16 @@ function createResponsePanel(verb: string, title: string) {
   }
   panel.append(skeleton);
 
-  const pre = document.createElement("pre");
-  pre.className = "json-block hidden";
-  panel.append(pre);
+  const output = document.createElement("div");
+  output.className = "response-output";
+  panel.append(output);
 
-  let lastJson = "";
+  let lastText = "";
 
   function setLoading(v: boolean) {
     skeleton.classList.toggle("hidden", !v);
     if (v) {
-      pre.classList.add("hidden");
+      output.innerHTML = "";
       statusBadge.classList.add("hidden");
       timeEl.classList.add("hidden");
     }
@@ -157,11 +159,9 @@ function createResponsePanel(verb: string, title: string) {
 
   function showResponse(data: unknown, status?: number, time?: string) {
     setLoading(false);
-    pre.classList.remove("hidden");
-    pre.innerHTML = syntaxHighlight(data);
-    pre.style.animation = "none";
-    void pre.offsetWidth;
-    pre.style.animation = "fadeSlideIn 0.35s ease";
+    output.innerHTML = syntaxHighlight(data);
+
+    lastText = output.textContent ?? "";
 
     if (status !== undefined) {
       statusBadge.classList.remove("hidden");
@@ -178,48 +178,203 @@ function createResponsePanel(verb: string, title: string) {
       timeEl.classList.add("hidden");
     }
 
-    lastJson = pre.textContent ?? "";
+    emitLog(status ?? 200, time ?? "");
+  }
+
+  function showContent(el: HTMLElement, status?: number, time?: string) {
+    setLoading(false);
+    output.innerHTML = "";
+    output.append(el);
+
+    lastText = el.textContent ?? "";
+
+    if (status !== undefined) {
+      statusBadge.classList.remove("hidden");
+      statusBadge.className = `status-pill ${status >= 200 && status < 300 ? "status-ok" : "status-err"}`;
+      statusBadge.textContent = String(status);
+    } else {
+      statusBadge.classList.add("hidden");
+    }
+
+    if (time) {
+      timeEl.classList.remove("hidden");
+      timeEl.textContent = time;
+    } else {
+      timeEl.classList.add("hidden");
+    }
+
     emitLog(status ?? 200, time ?? "");
   }
 
   function showError(msg: string, status?: number) {
     setLoading(false);
-    pre.classList.remove("hidden");
-    pre.textContent = msg;
-    pre.style.animation = "none";
-    void pre.offsetWidth;
-    pre.style.animation = "fadeSlideIn 0.35s ease";
+    const el = document.createElement("div");
+    el.className = "response-error";
+    el.textContent = msg;
+    output.innerHTML = "";
+    output.append(el);
+
+    lastText = msg;
+
     statusBadge.classList.remove("hidden");
     statusBadge.className = `status-pill ${status !== undefined && status >= 200 && status < 300 ? "status-ok" : "status-err"}`;
     statusBadge.textContent = status !== undefined ? String(status) : "ERR";
     timeEl.classList.add("hidden");
-    lastJson = msg;
     emitLog(status ?? 0, "");
   }
 
   function clear() {
     setLoading(false);
-    pre.classList.add("hidden");
+    output.innerHTML = "";
     statusBadge.classList.add("hidden");
     timeEl.classList.add("hidden");
   }
 
   copyBtn.addEventListener("click", () => {
-    navigator.clipboard.writeText(lastJson).catch(() => {});
+    navigator.clipboard.writeText(lastText).catch(() => {});
     copyBtn.classList.add("copied");
     setTimeout(() => copyBtn.classList.remove("copied"), 1500);
   });
 
-  return { element: panel, setLoading, showResponse, showError, clear };
+  return {
+    element: panel,
+    setLoading,
+    showResponse,
+    showContent,
+    showError,
+    clear,
+  };
+}
+
+export function renderSingleAsset(
+  asset: CryptoAssetSchema,
+  message?: string
+): HTMLElement {
+  const container = document.createElement("div");
+  container.className = "asset-response";
+
+  if (message) {
+    const msg = document.createElement("div");
+    msg.className = "response-message";
+    msg.textContent = message;
+    container.append(msg);
+  }
+
+  container.append(buildAssetCard(asset));
+  return container;
+}
+
+export function renderAssetList(
+  assets: CryptoAssetSchema[],
+  message?: string
+): HTMLElement {
+  const container = document.createElement("div");
+  container.className = "asset-response";
+
+  if (message) {
+    const msg = document.createElement("div");
+    msg.className = "response-message";
+    msg.textContent = message;
+    container.append(msg);
+  }
+
+  if (assets.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "asset-empty";
+    empty.textContent = "No assets found.";
+    container.append(empty);
+    return container;
+  }
+
+  const list = document.createElement("div");
+  list.className = "asset-list";
+
+  for (const asset of assets) {
+    const item = buildAssetCard(asset);
+    list.append(item);
+  }
+
+  container.append(list);
+  return container;
+}
+
+export function renderSuccessMessage(
+  msg: string,
+  asset?: CryptoAssetSchema
+): HTMLElement {
+  const container = document.createElement("div");
+  container.className = "asset-response";
+
+  const messageEl = document.createElement("div");
+  messageEl.className = "response-message success";
+  messageEl.textContent = msg;
+  container.append(messageEl);
+
+  if (asset) {
+    container.append(buildAssetCard(asset));
+  }
+
+  return container;
+}
+
+function buildAssetCard(asset: CryptoAssetSchema): HTMLElement {
+  const card = document.createElement("div");
+  card.className = "asset-card";
+
+  const rows: [string, string, string][] = [];
+
+  if (asset.id !== undefined) {
+    rows.push(["ID", String(asset.id), "#\uFE0F\u20E3"]);
+  }
+
+  rows.push(
+    ["Name", asset.name, "\uD83E\uDE99"],
+    ["Symbol", asset.symbol, "\uD83D\uDD24"],
+    [
+      "Price",
+      `$${Number(asset.price).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`,
+      "\uD83D\uDCB0",
+    ],
+    ["Volume", Number(asset.volume).toLocaleString(), "\uD83D\uDCCA"],
+    [
+      "Market Cap",
+      `$${Number(asset.market_cap).toLocaleString()}`,
+      "\uD83C\uDFDB\uFE0F",
+    ],
+  );
+
+  for (const [label, value, icon] of rows) {
+    const row = document.createElement("div");
+    row.className = "asset-row";
+
+    const labelEl = document.createElement("span");
+    labelEl.className = "asset-label";
+    labelEl.textContent = `${icon} ${label}`;
+
+    const valueEl = document.createElement("span");
+    valueEl.className = "asset-value";
+    valueEl.textContent = value;
+
+    row.append(labelEl, valueEl);
+    card.append(row);
+  }
+
+  return card;
 }
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-export function syntaxHighlight(data: unknown): string {
+function syntaxHighlight(data: unknown): string {
   const json = JSON.stringify(data, null, 2);
   if (!json) return "";
+
+  const pre = document.createElement("pre");
+  pre.className = "json-block";
 
   let result = "";
   let i = 0;
@@ -241,7 +396,10 @@ export function syntaxHighlight(data: unknown): string {
       const isKey = json[j] === ":";
       const cls = isKey ? "json-key" : "json-string";
       result += `<span class="${cls}">${escapeHtml(str)}</span>`;
-    } else if ((json[i] >= "0" && json[i] <= "9") || json[i] === "-") {
+    } else if (
+      (json[i] >= "0" && json[i] <= "9") ||
+      json[i] === "-"
+    ) {
       const start = i;
       i++;
       while (i < json.length && /[\d.eE+\-]/i.test(json[i])) i++;
@@ -264,5 +422,6 @@ export function syntaxHighlight(data: unknown): string {
     }
   }
 
-  return result;
+  pre.innerHTML = result;
+  return pre.outerHTML;
 }

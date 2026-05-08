@@ -1,6 +1,9 @@
 import { makeHttpRequest } from "../../utils/make_http_request";
 import type { ResponseSchema } from "../schemas/crypto_asset_schema";
-import { createCryptoAssetCard } from "./ui/crypto_asset_card";
+import {
+  createCryptoAssetCard,
+  renderSuccessMessage,
+} from "./ui/crypto_asset_card";
 
 export function createDeleteCryptoAssetComponent(): HTMLElement {
   const card = createCryptoAssetCard("DELETE", "Delete Asset");
@@ -27,7 +30,8 @@ export function createDeleteCryptoAssetComponent(): HTMLElement {
         `/crypto_asset/${cryptoAssetId}`
       );
       const elapsed = ((performance.now() - start) / 1000).toFixed(2) + "s";
-      card.responsePanel.showResponse(response, 200, elapsed);
+      const content = renderSuccessMessage(response.message);
+      card.responsePanel.showContent(content, 200, elapsed);
     } catch (error) {
       const msg = String(error);
       const m = msg.match(/\((\d+)\)/);

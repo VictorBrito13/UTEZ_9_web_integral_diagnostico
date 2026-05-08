@@ -442,4 +442,99 @@ body {
   animation: fadeSlideIn 0.3s ease;
 }
 
+.response-output {
+  animation: fadeSlideIn 0.35s ease;
+}
+
+.response-error {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.74rem;
+  line-height: 1.55;
+  color: var(--verb-delete);
+  background: linear-gradient(180deg, oklch(0.12 0.03 262 / 0.85), oklch(0.1 0.03 262 / 0.85));
+  border: 1px solid oklch(1 0 0 / 0.06);
+  border-radius: 0.5rem;
+  padding: 0.75rem 0.9rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+.asset-response {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.response-message {
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+  padding: 0.5rem 0.7rem;
+  background: oklch(1 0 0 / 0.03);
+  border-radius: 0.4rem;
+  border-left: 2px solid var(--primary);
+}
+.response-message.success {
+  border-left-color: var(--verb-get);
+  color: var(--verb-get);
+}
+
+.asset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.asset-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  background: linear-gradient(180deg, oklch(0.14 0.03 262 / 0.9), oklch(0.11 0.03 262 / 0.9));
+  border: 1px solid oklch(1 0 0 / 0.06);
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.85rem;
+}
+
+.asset-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid oklch(1 0 0 / 0.04);
+}
+.asset-row:last-child {
+  border-bottom: none;
+}
+
+.asset-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.asset-value {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--foreground);
+  text-align: right;
+}
+
+.asset-empty {
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 1rem;
+  background: linear-gradient(180deg, oklch(0.12 0.03 262 / 0.85), oklch(0.1 0.03 262 / 0.85));
+  border: 1px solid oklch(1 0 0 / 0.06);
+  border-radius: 0.5rem;
+}
+
 .hidden { display: none !important; }
