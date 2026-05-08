@@ -3,38 +3,31 @@ import type {
   CryptoAssetSchema,
   ResponseSchema,
 } from "../schemas/crypto_asset_schema";
-import { createLoader, setLoaderVisible } from "./ui/loader";
+import { createCryptoAssetCard } from "./ui/crypto_asset_card";
 
 export function createGetCryptoAssetsComponent(): HTMLElement {
-  const section = document.createElement("section");
-  section.className = "request-card";
+  const card = createCryptoAssetCard("GET", "Fetch Assets");
 
-  const title = document.createElement("h2");
-  title.textContent = "GET /crypto_asset";
+  card.setButtonText("Fetch assets");
 
-  const button = document.createElement("button");
-  button.textContent = "Fetch assets";
-
-  const loader = createLoader();
-  const result = document.createElement("pre");
-  result.className = "result";
-
-  button.addEventListener("click", async () => {
-    setLoaderVisible(loader, true);
-    result.textContent = "";
+  card.button.addEventListener("click", async () => {
+    card.setLoading(true);
+    const start = performance.now();
     try {
-      const response = await makeHttpRequest<ResponseSchema<CryptoAssetSchema[]>>(
-        "GET",
-        "/crypto_asset"
-      );
-      result.textContent = JSON.stringify(response, null, 2);
+      const response = await makeHttpRequest<
+        ResponseSchema<CryptoAssetSchema[]>,
+        undefined
+      >("GET", "/crypto_asset");
+      const elapsed = ((performance.now() - start) / 1000).toFixed(2) + "s";
+      card.responsePanel.showResponse(response, 200, elapsed);
     } catch (error) {
-      result.textContent = String(error);
+      const msg = String(error);
+      const m = msg.match(/\((\d+)\)/);
+      card.responsePanel.showError(msg, m ? parseInt(m[1]) : undefined);
     } finally {
-      setLoaderVisible(loader, false);
+      card.setLoading(false);
     }
   });
 
-  section.append(title, button, loader, result);
-  return section;
+  return card.element;
 }
