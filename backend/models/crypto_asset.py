@@ -5,7 +5,7 @@ from database.database import Base
 class CryptoAsset(Base):
     __tablename__ = "crypto_assets"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
     symbol = Column(String(20), nullable=False)
     price = Column(Float)
