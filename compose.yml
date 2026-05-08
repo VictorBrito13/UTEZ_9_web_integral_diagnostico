@@ -1,0 +1,22 @@
+services:
+
+  mysql:
+    image: mysql:8.0.46
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - 3306:3306
+    volumes:
+      - ${DATA_PATH}:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    ports:
+      - 8000:8000
+    environment:
+      MYSQL_CONNECTION_STRING: mysql+pymysql://${MYSQL_USER}:${MYSQL_ROOT_PASSWORD}@mysql:${MYSQL_PORT}/${MYSQL_DATABASE}
+    depends_on:
+      - mysql
