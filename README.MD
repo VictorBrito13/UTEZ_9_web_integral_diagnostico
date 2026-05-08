@@ -39,3 +39,10 @@ docker compose up --build
 
 ## Was AI used?
 Yes, mainly to generate initial code, styling and as support for syntax for docker compose and dockerfiles.
+
+## Environment variables
+- MYSQL_ROOT_PASSWORD: The password for the root user of the MySQL database.
+- MYSQL_DATABASE: The name of the MySQL database.
+- MYSQL_USER: The user of the MySQL database.
+- MYSQL_PORT: The port of the MySQL database.
+- DATA_PATH: The path to the data directory where data will be stored.
